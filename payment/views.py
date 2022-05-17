@@ -1,28 +1,31 @@
+from locale import currency
 from django.shortcuts import render
 import stripe
 import environ
 from rest_framework import views,response
-from goods.models import Item
+from goods.models import Item, Order
 
 env = environ.Env(DEBUG=(bool, False))
-
+stripe.api_key = env('SKSTRIPE')
 
 class GetSessionView(views.APIView):
     def get(self,request,pk):
-        item = Item.objects.get(pk=pk)
-        stripe.api_key = env('SKSTRIPE')
+        order = Order.objects.get(pk=pk)
+        items = order.items.all()
+        currency = items[0].currency
         session = stripe.checkout.Session.create(
-        line_items=[{
-            'price_data': {
-                'currency': 'rub',
-                'product_data': {
-                'name': item.name
+            line_items=[{
+                'price_data': {
+                    'currency': currency,
+                    'product_data': {
+                    'name': item.name
+                    },
+                    'unit_amount': int(str(item.price).replace('.','')),
                 },
-                'unit_amount': int(str(item.price).replace('.','')),
-            },
             'quantity': 1,
-            }],
+            } for item in items],
             mode='payment',
+            currency='rub',
             success_url='http://127.0.0.1:8000/success',
             cancel_url='http://127.0.0.1:8000/cancel',
         )
