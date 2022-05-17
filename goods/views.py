@@ -1,34 +1,41 @@
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, DetailView, DeleteView
+from rest_framework import views,response
 import stripe
+import environ
+
+env = environ.Env(DEBUG=(bool, False))
 
 from goods.models import Item
 
-def item_view(request,pk):
-    session = stripe.checkout.Session.create(
-    line_items=[{
-      'price_data': {
-        'currency': 'usd',
-        'product_data': {
-          'name': 'T-shirt',
-        },
-        'unit_amount': 2000,
-      },
-      'quantity': 1,
-    }],
-    mode='payment',
-    success_url='https://127.0.0.1:8080/success',
-    cancel_url='https://127.0.0.1:8080/cancel',
-  )
-    return redirect(session.url)
+class GetSessionView(views.APIView):
+    def get(self,request,pk):
+        item = Item.objects.get(pk=pk)
+        stripe.api_key = env('SKSTRIPE')
+        session = stripe.checkout.Session.create(
+        line_items=[{
+            'price_data': {
+                'currency': 'rub',
+                'product_data': {
+                'name': item.name,
+                },
+                'unit_amount': int(str(item.price).replace('.','')),
+            },
+            'quantity': 1,
+            }],
+            mode='payment',
+            success_url='http://127.0.0.1:8000/success',
+            cancel_url='http://127.0.0.1:8000/cancel',
+        )
+        return response.Response({'session_id':session.id})
 
 
 def success_view(request):
-    render(request,'success.html')
+    return render(request,'success.html')
 
 
 def cancel_view(request):
-    render(request,'cansel.html')
+    return render(request,'cancel.html')
 
 
 class ItemDetailView(DetailView):
