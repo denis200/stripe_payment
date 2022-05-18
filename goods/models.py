@@ -10,13 +10,15 @@ stripe.api_key = env('SKSTRIPE')
 
 
 class Currency(models.Model):
+    """ Модель валюты """
     currency = models.CharField(verbose_name=_('Currency'),max_length=3)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.currency
 
 
 class Item(models.Model):
+    """ Модель товара """
     name = models.CharField(verbose_name=_('Name'), max_length=100)
     description = models.CharField(verbose_name=_('Description'), max_length=250)
     price = models.DecimalField(verbose_name=_('Price'),max_digits=10, decimal_places=2,default=0)
@@ -27,14 +29,14 @@ class Item(models.Model):
 
 
 class Order(models.Model):
+    """ Модель заказа """
     total_price = models.DecimalField(verbose_name=_('Price'),max_digits=10, decimal_places=2,default=0)
     items = models.ManyToManyField(Item,related_name='items')
 
 
 @receiver(post_save, sender=Item)
 def save_user(sender, instance,created ,**kwargs):
-    """ При создании пользователя создается блог,
-        а также начинается рассылка последних постов
+    """ При создании товара создается продукт и его цена 
     """
     if created:
         product = stripe.Product.create(name=instance.name,description = instance.description)

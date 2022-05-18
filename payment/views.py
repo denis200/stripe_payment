@@ -9,6 +9,7 @@ env = environ.Env(DEBUG=(bool, False))
 stripe.api_key = env('SKSTRIPE')
 
 class GetSessionView(views.APIView):
+    """ По запросу buy/order_id вызывается данная view"""
     """ PS. Очень интересно как происходит конвертация валют.В доке не нашел."""
     def get(self,request,pk):
         order = Order.objects.get(pk=pk)

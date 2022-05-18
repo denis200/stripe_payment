@@ -16,10 +16,12 @@ class ItemDetailView(DetailView):
 
 
 class MakeOrderView(APIView):
+    """ При запросе принимается список товаров и создается модель Order"""
     def post(self,request):
         items = Item.objects.filter(pk__in = request.data)
         total_price = items.aggregate(Sum('price'))
         order = Order.objects.create(total_price = total_price['price__sum'])
         order.save()
-        [order.items.add(item.pk) for item in items]
+        for item in items:
+            order.items.add(item.pk)
         return Response({'order_id':order.id})
