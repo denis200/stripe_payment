@@ -9,6 +9,7 @@ env = environ.Env(DEBUG=(bool, False))
 stripe.api_key = env('SKSTRIPE')
 
 class GetSessionView(views.APIView):
+    """ PS. Очень интересно как происходит конвертация валют.В доке не нашел."""
     def get(self,request,pk):
         order = Order.objects.get(pk=pk)
         items = order.items.all()
@@ -25,7 +26,6 @@ class GetSessionView(views.APIView):
             'quantity': 1,
             } for item in items],
             mode='payment',
-            currency='rub',
             success_url='http://127.0.0.1:8000/success',
             cancel_url='http://127.0.0.1:8000/cancel',
         )
