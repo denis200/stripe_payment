@@ -42,6 +42,8 @@ docker exec web_django python manage.py setup_test_data
 ```
 docker exec -it web_django python manage.py setup_test_data
 ```
+
+Открыть 127.0.0.1:8000/ чтобы увидеть список товаров
 ### P.S. Из-за выполнения дополнительных задач,произошло отклонение от изначального тз.
 
 
